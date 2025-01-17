@@ -29,7 +29,6 @@ export const check_in = createTable("check_in", {
   major: varchar("major", { length: 2000 }).notNull(),
   year: integer("year").notNull(),
   index: integer("index").notNull(),
-
   authorizer: varchar("authorizer", { length: 255 })
     .notNull()
     .references(() => actual_users.username, {
@@ -58,7 +57,7 @@ export const actual_users = createTable("actual_users", {
   username: varchar("username", { length: 255 }).unique().notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(),
-
+  isAdmin: boolean("isAdmin").notNull().default(false),
   image: varchar("image", { length: 255 }),
 });
 

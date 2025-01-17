@@ -4,14 +4,30 @@ import { useTickets } from "@/hooks/use-tickets";
 import { StatsGrid } from "@/components/stats-grid";
 import { TicketList } from "@/components/ticket-list";
 import { SafetyPin } from "@/components/safety-pin";
+import { DateRangePicker } from "./date-range-picker";
+import { isWithinInterval, parseISO } from "date-fns";
 
 export default function Dashboard() {
   const { tickets, stats } = useTickets();
 
+  const handleDateRangeChange = (
+    range: { from: Date; to: Date } | undefined,
+  ) => {
+    // Filter tickets based on date range
+    const filteredTickets = tickets.filter((ticket) => {
+      if (!range?.from || !range?.to || !ticket.purchaseDate) return true;
+      const ticketDate = parseISO(ticket.purchaseDate);
+      return isWithinInterval(ticketDate, { start: range.from, end: range.to });
+    });
+
+    // Update tickets state here (you would typically do this through a state management solution)
+    console.log("Filtered tickets:", filteredTickets);
+  };
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500/20 via-neutral-100 to-black/20">
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
-        <header className="flex items-center justify-between">
+        <header className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative">
             <h1 className="font-mono text-4xl font-black uppercase tracking-tight">
               Venue
@@ -22,7 +38,7 @@ export default function Dashboard() {
               <SafetyPin />
             </div>
           </div>
-          <div className="h-16 w-16 rounded-full bg-black" />
+          <DateRangePicker onDateRangeChange={handleDateRangeChange} />
         </header>
 
         <StatsGrid stats={stats} />
