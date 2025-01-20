@@ -1,31 +1,56 @@
 "use client";
-
 import { useTickets } from "@/hooks/use-tickets";
 import { StatsGrid } from "@/components/stats-grid";
 import { TicketList } from "@/components/ticket-list";
 import { SafetyPin } from "@/components/safety-pin";
 import { DateRangePicker } from "./date-range-picker";
 import { isWithinInterval, parseISO } from "date-fns";
+import { api } from "@/trpc/react";
+import React from "react";
 
 export default function Dashboard() {
   const { tickets, stats } = useTickets();
 
-  const handleDateRangeChange = (
-    range: { from: Date; to: Date } | undefined,
-  ) => {
-    // Filter tickets based on date range
-    const filteredTickets = tickets.filter((ticket) => {
-      if (!range?.from || !range?.to || !ticket.purchaseDate) return true;
-      const ticketDate = parseISO(ticket.purchaseDate);
-      return isWithinInterval(ticketDate, { start: range.from, end: range.to });
-    });
+  // State for the selected date range
 
-    // Update tickets state here (you would typically do this through a state management solution)
-    console.log("Filtered tickets:", filteredTickets);
+  const [dateRange, setDateRange] = React.useState<
+    | {
+        from: Date | undefined;
+        to: Date | undefined;
+      }
+    | undefined
+  >({
+    from: new Date(new Date().setDate(new Date().getDate() - 8)), // 8 days ago
+    to: new Date(new Date().setDate(new Date().getDate() + 1)), // today
+  });
+
+  const arrivals = api.post.getLatest_check_ins.useQuery({
+    from:
+      dateRange?.from ?? new Date(new Date().setDate(new Date().getDate() - 8)),
+    to: dateRange?.to ?? new Date(),
+  });
+  const handleDateRangeChange = (
+    range: { from: Date | undefined; to: Date | undefined } | undefined,
+  ) => {
+    setDateRange(range);
+    // // Filter tickets based on the selected date range
+    // const filteredTickets = tickets.filter((ticket) => {
+    //   if (!range?.from || !range?.to || !ticket.purchaseDate) return true;
+    //   const ticketDate = parseISO(ticket.purchaseDate);
+    //   return isWithinInterval(ticketDate, { start: range.from, end: range.to });
+    // });
+    // // Update tickets state here (you would typically do this through a state management solution)
+    // console.log("Filtered tickets:", filteredTickets);
   };
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500/20 via-neutral-100 to-black/20">
+      <button
+        className="m-5 bg-black p-5 text-white"
+        onClick={async () => {
+          await arrivals.refetch();
+        }}
+      ></button>
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
         <header className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative">
@@ -38,11 +63,16 @@ export default function Dashboard() {
               <SafetyPin />
             </div>
           </div>
-          <DateRangePicker onDateRangeChange={handleDateRangeChange} />
+          {/* Pass the current date range and the function to handle changes */}
+          <DateRangePicker
+            dateRange={dateRange}
+            setDateRange={handleDateRangeChange}
+          />
         </header>
 
         <StatsGrid stats={stats} />
-        <TicketList tickets={tickets} />
+        {/* <TicketList tickets={tickets} /> */}
+        {arrivals.data && <TicketList arrivals={arrivals.data ?? []} />}
 
         {/* Punk Background Elements */}
         <div

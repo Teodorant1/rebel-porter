@@ -16,11 +16,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <body>
-        <AuthProvider>
+      <AuthProvider>
+        <body>
           <TRPCReactProvider>{children}</TRPCReactProvider>
-        </AuthProvider>
-      </body>
+        </body>
+      </AuthProvider>
     </html>
   );
 }

@@ -19,16 +19,19 @@ import { type AdapterAccount } from "next-auth/adapters";
  */
 export const createTable = pgTableCreator((name) => `rebel-porter_${name}`);
 
-export const check_in = createTable("check_in", {
+export const blacklisted_student = createTable("blacklisted_student", {
   id: varchar("id", { length: 255 })
     .notNull()
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  name: varchar("name", { length: 2000 }).notNull(),
+  first_name: varchar("first_name", { length: 2000 }).notNull(),
   surname: varchar("surname", { length: 2000 }).notNull(),
   major: varchar("major", { length: 2000 }).notNull(),
-  year: integer("year").notNull(),
-  index: integer("index").notNull(),
+  // year: integer("year").notNull(),
+  // index: integer("index").notNull(),
+  year: varchar("year", { length: 2000 }).notNull(),
+  index: varchar("index", { length: 2000 }).notNull(),
+  major_index_year: varchar("index", { length: 2000 }).notNull(),
   authorizer: varchar("authorizer", { length: 255 })
     .notNull()
     .references(() => actual_users.username, {
@@ -41,14 +44,50 @@ export const check_in = createTable("check_in", {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
-  createdAt: timestamp("createdAt", { withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true }).$onUpdate(
-    () => new Date(),
+  // createdAt: timestamp("createdAt", { withTimezone: true }).default(
+  //   sql`CURRENT_TIMESTAMP`,
+  // ),
+  // updatedAt: timestamp("updatedAt", { withTimezone: true })
+  //   .$onUpdate(() => new Date())
+  //   .default(sql`CURRENT_TIMESTAMP`),
+  // isPublic: boolean("isPublic").default(false),
+});
+
+export const arrival = createTable("arrival", {
+  id: varchar("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  first_name: varchar("first_name", { length: 2000 }).notNull(),
+  surname: varchar("surname", { length: 2000 }).notNull(),
+  major: varchar("major", { length: 2000 }).notNull(),
+  // year: integer("year").notNull(),
+  // index: integer("index").notNull(),
+  year: varchar("year", { length: 2000 }).notNull(),
+  index: varchar("index", { length: 2000 }).notNull(),
+  authorizer: varchar("authorizer", { length: 255 })
+    .notNull()
+    .references(() => actual_users.username, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+  createdById: varchar("createdById", { length: 255 })
+    .notNull()
+    .references(() => actual_users.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
+  createdAt: timestamp("createdAt", { withTimezone: true }).default(
+    sql`CURRENT_TIMESTAMP`,
   ),
+  updatedAt: timestamp("updatedAt", { withTimezone: true })
+    .$onUpdate(() => new Date())
+    .default(sql`CURRENT_TIMESTAMP`),
   isPublic: boolean("isPublic").default(false),
 });
+
+export type arrivalType = typeof arrival.$inferSelect;
+
 export const actual_users = createTable("actual_users", {
   id: varchar("id", { length: 255 })
     .notNull()

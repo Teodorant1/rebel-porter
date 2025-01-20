@@ -12,7 +12,6 @@ export function LatestPost() {
   const createPost = api.post.create.useMutation({
     onSuccess: async () => {
       await utils.post.invalidate();
-      setName("");
     },
   });
 
